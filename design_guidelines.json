@@ -1,0 +1,154 @@
+{
+  "theme": "Light",
+  "archetype": "1 (Organic & Earthy)",
+  "design_philosophy": "Warm, welcoming, elegant, luxurious, smooth, modern. Emotionally connects with travelers. Combines Nature + Premium Cafe + Modern Shopping + Travel + Hospitality + Kolli Hills. Uses editorial/asymmetric layouts, generous whitespace, cinematic photography of misty hills / fresh coffee / honey / mountain roads. Typography feels curated (serif/display for headings paired with a warm humanist sans-serif for body). Generous spacing, noise/grain texture, and soft Framer Motion interactions.",
+  "colors": {
+    "primary": "#1E3F20",
+    "secondary": "#4A2E15",
+    "background_main": "#FDFBF7",
+    "background_alt": "#FAF8F5",
+    "accent": "#D4AF37",
+    "text_dark": "#1F1F1F",
+    "text_light": "#FFFFFF",
+    "text_muted": "#5C5C5C",
+    "border": "#E8E2D9"
+  },
+  "typography": {
+    "heading_font": "Playfair Display",
+    "body_font": "Work Sans",
+    "weights": {
+      "light": 300,
+      "regular": 400,
+      "medium": 500,
+      "semibold": 600,
+      "bold": 700
+    },
+    "sizes": {
+      "h1": "text-5xl md:text-6xl lg:text-7xl",
+      "h2": "text-4xl md:text-5xl",
+      "h3": "text-2xl md:text-3xl",
+      "body": "text-base md:text-lg",
+      "small": "text-sm"
+    }
+  },
+  "spacing": {
+    "section_padding": "py-20 md:py-32",
+    "container": "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8",
+    "grid_gap": "gap-6 md:gap-8 lg:gap-12"
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-[#1E3F20] text-white hover:bg-[#152C16] transition-colors duration-300 rounded-none px-8 py-4 font-medium tracking-wide",
+      "secondary": "border border-[#1E3F20] text-[#1E3F20] hover:bg-[#1E3F20] hover:text-white transition-colors duration-300 rounded-none px-8 py-4 font-medium tracking-wide",
+      "accent": "bg-[#D4AF37] text-[#1F1F1F] hover:bg-[#BFA030] transition-colors duration-300 rounded-none px-8 py-4 font-medium tracking-wide"
+    },
+    "cards": {
+      "category": "group relative overflow-hidden bg-[#FAF8F5] border border-[#E8E2D9] transition-all duration-500 hover:shadow-xl",
+      "product": "bg-white border border-[#E8E2D9] p-4 flex flex-col gap-4 transition-all duration-300 hover:shadow-lg",
+      "review": "bg-[#FAF8F5] p-8 border border-[#E8E2D9] flex flex-col gap-4"
+    }
+  },
+  "layout_sections": [
+    {
+      "name": "Navigation",
+      "description": "Sticky glassmorphism header, logo on left, navigation center, CTA right. Dark green text.",
+      "classes": "fixed w-full top-0 z-50 backdrop-blur-xl bg-[#FDFBF7]/80 border-b border-[#E8E2D9]/50"
+    },
+    {
+      "name": "Premium Hero",
+      "description": "Large cinematic Kolli Hills background, dark gradient overlay to ensure text readability, logo in center or top, headline 'Taste the Freshness of Kolli Hills', subheading, Order Now button, Explore Menu button, smooth scroll indicator at bottom.",
+      "classes": "relative h-screen flex flex-col justify-center items-center text-center px-4"
+    },
+    {
+      "name": "Categories",
+      "description": "Bento grid or elegant flex wrap grid of 15 categories. Cards with hover zoom on images and smooth typography slide up.",
+      "classes": "py-24 bg-[#FDFBF7]"
+    },
+    {
+      "name": "Best Sellers",
+      "description": "Grid of 6 top products. Large elegant imagery, rating stars in gold, price, 'Add to Cart' button appearing on hover.",
+      "classes": "py-24 bg-[#FAF8F5]"
+    },
+    {
+      "name": "Our Story",
+      "description": "Asymmetric layout. Large cinematic image on one side, long-form warm hospitality copy on the other. Generous line height.",
+      "classes": "py-24 bg-[#FDFBF7]"
+    },
+    {
+      "name": "Gallery",
+      "description": "Masonry grid of premium interior shots and real cafe photos provided by user. Hover overlay with brand icon.",
+      "classes": "py-24 bg-[#FAF8F5]"
+    },
+    {
+      "name": "Customer Reviews",
+      "description": "Horizontal scrolling or elegant 3-column grid of review cards. Quote icon in gold, minimal typography.",
+      "classes": "py-24 bg-[#FDFBF7]"
+    },
+    {
+      "name": "Contact & Location",
+      "description": "Split section: Interactive Map (or static map image with pin) on left, Contact info (Phone, 24 Hours, Pickup Only, Get Directions) on right with dark forest green background.",
+      "classes": "py-24 bg-[#1E3F20] text-white"
+    },
+    {
+      "name": "Footer",
+      "description": "Premium tall footer. Brand logo, quick links, legal, social icons, newsletter signup.",
+      "classes": "bg-[#1F1F1F] text-white py-16"
+    }
+  ],
+  "media": {
+    "logo": "https://customer-assets.emergentagent.com/job_ec7d6cda-b535-4f11-9e51-cd93b5b477e6/artifacts/b1pzhxj7_Screenshot%202026-07-03%20163632.png",
+    "hero": [
+      "https://images.unsplash.com/photo-1418065460487-3e41a6c84dc5?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1MDZ8MHwxfHNlYXJjaHw0fHxtaXN0eSUyMG1vdW50YWlucyUyMGZvcmVzdCUyMG5hdHVyZXxlbnwwfHx8fDE3ODMxMzg1Nzh8MA&ixlib=rb-4.1.0&q=85"
+    ],
+    "categories": {
+      "Tea": "https://images.unsplash.com/photo-1570784332176-fdd73da66f03?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMjh8MHwxfHNlYXJjaHwxfHxwcmVtaXVtJTIwY3VwfGVufDB8fHx8MTc4MzEzODU3OHww&ixlib=rb-4.1.0&q=85",
+      "Coffee": "https://images.unsplash.com/photo-1593443320739-77f74939d0da?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxODF8MHwxfHNlYXJjaHwxfHxwcmVtaXVtJTIwY29mZmVlJTIwbGF0dGUlMjBhcnR8ZW58MHx8fHwxNzgzMTM4NTc4fDA&ixlib=rb-4.1.0&q=85",
+      "Fresh Juice": "https://images.unsplash.com/photo-1603569283847-aa295f0d016a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxOTF8MHwxfHNlYXJjaHwxfHxmcmVzaCUyMGZydWl0JTIwanVpY2UlMjBnbGFzc3xlbnwwfHx8fDE3ODMxMzg1Nzh8MA&ixlib=rb-4.1.0&q=85",
+      "Milkshakes": "https://images.unsplash.com/photo-1619158403521-ed9795026d47?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzJ8MHwxfHNlYXJjaHwxfHxtaWxrc2hha2UlMjBnbGFzc3xlbnwwfHx8fDE3ODMxMzg1Nzd8MA&ixlib=rb-4.1.0&q=85",
+      "Soft Drinks": "https://images.unsplash.com/photo-1681369738257-88cbf9fc2843?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxOTJ8MHwxfHNlYXJjaHwxfHxzb2Z0JTIwZHJpbmtzJTIwYm90dGxlc3xlbnwwfHx8fDE3ODMxMzg1Nzh8MA&ixlib=rb-4.1.0&q=85",
+      "Ice Cream": "https://images.pexels.com/photos/7761650/pexels-photo-7761650.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "Sandwiches": "https://images.unsplash.com/photo-1553909489-cd47e0907980?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NjZ8MHwxfHNlYXJjaHwxfHxnb3VybWV0JTIwc2FuZHdpY2h8ZW58MHx8fHwxNzgzMTM4NTc4fDA&ixlib=rb-4.1.0&q=85",
+      "Snacks": "https://images.unsplash.com/photo-1585341840941-98553e474d84?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzF8MHwxfHNlYXJjaHwxfHxjYWZlJTIwc25hY2tzfGVufDB8fHx8MTc4MzEzODU3OHww&ixlib=rb-4.1.0&q=85",
+      "Bakery": "https://images.unsplash.com/photo-1568254183919-78a4f43a2877?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzNTl8MHwxfHNlYXJjaHwxfHxwcmVtaXVtJTIwYmFrZXJ5JTIwcGFzdHJpZXN8ZW58MHx8fHwxNzgzMTM4NTc4fDA&ixlib=rb-4.1.0&q=85",
+      "Biscuits": "https://images.unsplash.com/photo-1558961363-fa8fdf82db35?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTN8MHwxfHNlYXJjaHwxfHxiaXNjdWl0cyUyMGNvb2tpZXN8ZW58MHx8fHwxNzgzMTM4NTc4fDA&ixlib=rb-4.1.0&q=85",
+      "Chocolates": "https://images.unsplash.com/photo-1734692928513-351516b38869?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA4Mzl8MHwxfHNlYXJjaHwxfHxwcmVtaXVtJTIwY2hvY29sYXRlc3xlbnwwfHx8fDE3ODMxMzg1ODZ8MA&ixlib=rb-4.1.0&q=85",
+      "Dry Fruits": "https://images.unsplash.com/photo-1600189020840-e9918c25269d?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxODl8MHwxfHNlYXJjaHwxfHxkcnklMjBmcnVpdHMlMjBudXRzfGVufDB8fHx8MTc4MzEzODU4Nnww&ixlib=rb-4.1.0&q=85",
+      "Honey": "https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2MDV8MHwxfHNlYXJjaHwxfHxwdXJlJTIwaG9uZXklMjBqYXJ8ZW58MHx8fHwxNzgzMTM4NTg2fDA&ixlib=rb-4.1.0&q=85",
+      "Spices": "https://images.unsplash.com/photo-1668885309844-5bb50f7c2e61?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1OTN8MHwxfHNlYXJjaHwxfHxpbmRpYW4lMjBzcGljZXMlMjBtYXJrZXR8ZW58MHx8fHwxNzgzMTM4NTg2fDA&ixlib=rb-4.1.0&q=85",
+      "Kolli Hills Specials": "https://images.unsplash.com/photo-1567726843492-df0484bb0b05?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzd8MHwxfHNlYXJjaHwxfHxjb2ZmZWUlMjBwbGFudGF0aW9uJTIwbWlzdHxlbnwwfHx8fDE3ODMxMzg1OTN8MA&ixlib=rb-4.1.0&q=85"
+    },
+    "best_sellers": [
+      "https://images.unsplash.com/photo-1593443320739-77f74939d0da?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxODF8MHwxfHNlYXJjaHwxfHxwcmVtaXVtJTIwY29mZmVlJTIwbGF0dGUlMjBhcnR8ZW58MHx8fHwxNzgzMTM4NTc4fDA&ixlib=rb-4.1.0&q=85",
+      "https://images.unsplash.com/photo-1553909489-cd47e0907980?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NjZ8MHwxfHNlYXJjaHwxfHxnb3VybWV0JTIwc2FuZHdpY2h8ZW58MHx8fHwxNzgzMTM4NTc4fDA&ixlib=rb-4.1.0&q=85",
+      "https://images.unsplash.com/photo-1619158403521-ed9795026d47?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzJ8MHwxfHNlYXJjaHwxfHxtaWxrc2hha2UlMjBnbGFzc3xlbnwwfHx8fDE3ODMxMzg1Nzd8MA&ixlib=rb-4.1.0&q=85",
+      "https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2MDV8MHwxfHNlYXJjaHwxfHxwdXJlJTIwaG9uZXklMjBqYXJ8ZW58MHx8fHwxNzgzMTM4NTg2fDA&ixlib=rb-4.1.0&q=85",
+      "https://images.unsplash.com/photo-1734692928513-351516b38869?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA4Mzl8MHwxfHNlYXJjaHwxfHxwcmVtaXVtJTIwY2hvY29sYXRlc3xlbnwwfHx8fDE3ODMxMzg1ODZ8MA&ixlib=rb-4.1.0&q=85",
+      "https://images.unsplash.com/photo-1600189020840-e9918c25269d?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxODl8MHwxfHNlYXJjaHwxfHxkcnklMjBmcnVpdHMlMjBudXRzfGVufDB8fHx8MTc4MzEzODU4Nnww&ixlib=rb-4.1.0&q=85"
+    ],
+    "gallery": [
+      "https://customer-assets.emergentagent.com/job_ec7d6cda-b535-4f11-9e51-cd93b5b477e6/artifacts/76dw4rx7_WhatsApp%20Image%202026-07-03%20at%2010.56.30%20AM.jpeg",
+      "https://customer-assets.emergentagent.com/job_ec7d6cda-b535-4f11-9e51-cd93b5b477e6/artifacts/sgvgcvyv_WhatsApp%20Image%202026-07-03%20at%2010.56.30%20AM%20%282%29.jpeg",
+      "https://customer-assets.emergentagent.com/job_ec7d6cda-b535-4f11-9e51-cd93b5b477e6/artifacts/fw56re5o_WhatsApp%20Image%202026-07-03%20at%2010.56.30%20AM%20%281%29.jpeg",
+      "https://images.unsplash.com/photo-1669215852975-137f986f2445?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxNzV8MHwxfHNlYXJjaHwyfHxwcmVtaXVtJTIwY2FmZSUyMGludGVyaW9yJTIwc2hlbHZlc3xlbnwwfHx8fDE3ODMxMzg1ODZ8MA&ixlib=rb-4.1.0&q=85",
+      "https://images.unsplash.com/photo-1609168171887-2fa46b721c64?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxNzV8MHwxfHNlYXJjaHwzfHxwcmVtaXVtJTIwY2FmZSUyMGludGVyaW9yJTIwc2hlbHZlc3xlbnwwfHx8fDE3ODMxMzg1ODZ8MA&ixlib=rb-4.1.0&q=85",
+      "https://images.unsplash.com/photo-1570386060972-fdf0a5bdc4c1?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxNzV8MHwxfHNlYXJjaHwxfHxwcmVtaXVtJTIwY2FmZSUyMGludGVyaW9yJTIwc2hlbHZlc3xlbnwwfHx8fDE3ODMxMzg1ODZ8MA&ixlib=rb-4.1.0&q=85",
+      "https://images.unsplash.com/photo-1689770765550-3bbe196f3dd1?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2ODl8MHwxfHNlYXJjaHwyfHxyb2Fkc2lkZSUyMGNhZmUlMjBzaG9wfGVufDB8fHx8MTc4MzEzODU4Nnww&ixlib=rb-4.1.0&q=85",
+      "https://images.unsplash.com/photo-1773391979124-e32885ff3388?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2ODl8MHwxfHNlYXJjaHwzfHxyb2Fkc2lkZSUyMGNhZmUlMjBzaG9wfGVufDB8fHx8MTc4MzEzODU4Nnww&ixlib=rb-4.1.0&q=85"
+    ]
+  },
+  "interactions": {
+    "hover": "Subtle scale up (1.05) on images, fade-in for overlays. Use Framer Motion for smooth transitions.",
+    "scroll": "Fade in up for sections as they enter viewport.",
+    "micro": "Magnetic buttons for primary CTAs, grain texture overlay over the whole app (pointer-events-none, mix-blend-overlay, opacity-5)."
+  },
+  "instructions_to_main_agent": [
+    "Ensure all interactive and key informational elements have a data-testid attribute.",
+    "Use Playfair Display for headings and Work Sans for body text. Do not use Inter or Roboto.",
+    "Do NOT use standard ecommerce template styling. Layout should be editorial, using generous whitespace.",
+    "Apply grain/noise texture overlay app-wide to give it a premium feel.",
+    "Ensure the hero background is adequately darkened so the white/gold text is easily readable.",
+    "Use Lucide-react for icons.",
+    "Categories and Best Sellers should use the provided unsplash/pexels images.",
+    "Gallery should incorporate the 3 user-provided real photos alongside the unsplash ones."
+  ]
+}
