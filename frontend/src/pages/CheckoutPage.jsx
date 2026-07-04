@@ -29,9 +29,7 @@ const CheckoutPage = () => {
         notes: form.notes.trim(),
         items: items.map((i) => ({
           slug: i.slug,
-          name: i.name,
           variant_label: i.variant_label,
-          unit_price: i.unit_price,
           qty: i.qty,
         })),
       });

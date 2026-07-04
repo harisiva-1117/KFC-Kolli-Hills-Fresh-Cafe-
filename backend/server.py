@@ -6,7 +6,7 @@ load_dotenv(ROOT_DIR / '.env')
 import os
 import uuid
 import logging
-import shutil
+import imghdr
 from datetime import datetime, timezone, timedelta
 from typing import List, Optional
 
@@ -16,7 +16,7 @@ from fastapi import FastAPI, APIRouter, HTTPException, Query, Depends, UploadFil
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
-from pydantic import BaseModel, Field, ConfigDict, EmailStr
+from pydantic import BaseModel, Field, ConfigDict, EmailStr, conint
 
 # ---------- Setup ----------
 mongo_url = os.environ['MONGO_URL']
@@ -29,6 +29,9 @@ UPLOAD_DIR.mkdir(exist_ok=True)
 JWT_SECRET = os.environ['JWT_SECRET']
 JWT_ALGORITHM = "HS256"
 ACCESS_TOKEN_TTL_MIN = 60 * 12  # 12 hours
+MAX_UPLOAD_BYTES = int(os.environ.get("MAX_UPLOAD_BYTES", 5 * 1024 * 1024))
+LOGIN_MAX_ATTEMPTS = int(os.environ.get("LOGIN_MAX_ATTEMPTS", 5))
+LOGIN_LOCKOUT_MINUTES = int(os.environ.get("LOGIN_LOCKOUT_MINUTES", 15))
 
 app = FastAPI(title="Kolli Hills Fresh Cafe API")
 app.mount("/api/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
@@ -168,6 +171,7 @@ class Product(ProductBase):
 
 
 class OrderItem(BaseModel):
+    """Server-authoritative order line. Populated from DB, never from client input."""
     slug: str
     name: str
     variant_label: str
@@ -175,11 +179,18 @@ class OrderItem(BaseModel):
     qty: int
 
 
+class OrderItemInput(BaseModel):
+    """Customer submits only slug + variant_label + qty. Price and name are resolved server-side."""
+    slug: str
+    variant_label: str
+    qty: conint(gt=0, le=100)
+
+
 class OrderCreate(BaseModel):
-    customer_name: str
-    customer_phone: str
-    notes: str = ""
-    items: List[OrderItem]
+    customer_name: str = Field(min_length=1, max_length=120)
+    customer_phone: str = Field(min_length=6, max_length=32)
+    notes: str = Field(default="", max_length=500)
+    items: List[OrderItemInput] = Field(min_length=1, max_length=50)
 
 
 class OrderStatusUpdate(BaseModel):
@@ -213,6 +224,16 @@ class LoginResponse(BaseModel):
 
 
 VALID_ORDER_STATUSES = {"received", "confirmed", "ready", "collected", "cancelled"}
+
+# Allowed forward-only order status transitions.  Terminal states (collected, cancelled)
+# cannot be moved back into an active state.
+ORDER_TRANSITIONS = {
+    "received": {"confirmed", "cancelled"},
+    "confirmed": {"ready", "cancelled"},
+    "ready": {"collected", "cancelled"},
+    "collected": set(),
+    "cancelled": set(),
+}
 
 
 # ---------- Helpers ----------
@@ -256,12 +277,48 @@ async def get_status_checks():
 
 
 # ---------- Routes: Auth ----------
+def _client_ip(request: Request) -> str:
+    fwd = request.headers.get("x-forwarded-for", "")
+    if fwd:
+        return fwd.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
+
+
+async def _check_login_lockout(identifier: str) -> None:
+    """Raise 429 if the identifier has exceeded LOGIN_MAX_ATTEMPTS within LOGIN_LOCKOUT_MINUTES."""
+    cutoff = (datetime.now(timezone.utc) - timedelta(minutes=LOGIN_LOCKOUT_MINUTES)).isoformat()
+    count = await db.login_attempts.count_documents({
+        "identifier": identifier,
+        "created_at": {"$gte": cutoff},
+    })
+    if count >= LOGIN_MAX_ATTEMPTS:
+        raise HTTPException(
+            status.HTTP_429_TOO_MANY_REQUESTS,
+            f"Too many failed login attempts. Try again in {LOGIN_LOCKOUT_MINUTES} minutes.",
+        )
+
+
+async def _record_failed_login(identifier: str) -> None:
+    await db.login_attempts.insert_one({
+        "identifier": identifier,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    })
+
+
+async def _clear_login_attempts(identifier: str) -> None:
+    await db.login_attempts.delete_many({"identifier": identifier})
+
+
 @api_router.post("/auth/login", response_model=LoginResponse)
-async def auth_login(payload: LoginRequest):
+async def auth_login(payload: LoginRequest, request: Request):
     email = payload.email.lower().strip()
+    identifier = f"{_client_ip(request)}:{email}"
+    await _check_login_lockout(identifier)
     user = await db.users.find_one({"email": email})
     if not user or not verify_password(payload.password, user["password_hash"]):
+        await _record_failed_login(identifier)
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid email or password")
+    await _clear_login_attempts(identifier)
     token = create_access_token(user["id"], user["email"], user["role"])
     safe_user = {"id": user["id"], "email": user["email"], "name": user.get("name", ""), "role": user["role"]}
     return LoginResponse(access_token=token, user=safe_user)
@@ -395,6 +452,8 @@ async def delete_product(slug: str, admin=Depends(get_current_admin)):
 
 # ---------- Routes: Uploads ----------
 ALLOWED_IMG_EXT = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
+# Map imghdr result → allowed extension family
+IMGHDR_TO_EXT = {"jpeg": ".jpg", "png": ".png", "webp": ".webp", "gif": ".gif"}
 
 
 @api_router.post("/admin/upload")
@@ -402,30 +461,92 @@ async def upload_image(file: UploadFile = File(...), admin=Depends(get_current_a
     ext = Path(file.filename or "").suffix.lower()
     if ext not in ALLOWED_IMG_EXT:
         raise HTTPException(400, f"Unsupported file type. Allowed: {sorted(ALLOWED_IMG_EXT)}")
+
+    # Stream the upload to disk with an enforced size cap.
     fname = f"{uuid.uuid4().hex}{ext}"
     dest = UPLOAD_DIR / fname
-    with dest.open("wb") as f:
-        shutil.copyfileobj(file.file, f)
-    # Return an app-relative URL so it works across environments
+    bytes_read = 0
+    chunk_size = 64 * 1024
+    try:
+        with dest.open("wb") as out:
+            while True:
+                chunk = await file.read(chunk_size)
+                if not chunk:
+                    break
+                bytes_read += len(chunk)
+                if bytes_read > MAX_UPLOAD_BYTES:
+                    out.close()
+                    dest.unlink(missing_ok=True)
+                    raise HTTPException(
+                        status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                        f"File exceeds max upload size of {MAX_UPLOAD_BYTES // 1024} KB",
+                    )
+                out.write(chunk)
+    except HTTPException:
+        raise
+    except Exception:
+        dest.unlink(missing_ok=True)
+        raise HTTPException(400, "Could not save uploaded file")
+
+    # Validate magic bytes match the extension (defence against renamed executables).
+    kind = imghdr.what(dest)
+    expected_family = ".jpg" if ext == ".jpeg" else ext
+    if kind not in IMGHDR_TO_EXT or IMGHDR_TO_EXT[kind] != expected_family:
+        dest.unlink(missing_ok=True)
+        raise HTTPException(400, "File content does not match a supported image type")
+
     return {"url": f"/api/uploads/{fname}", "filename": fname}
 
 
 # ---------- Routes: Orders ----------
+async def _resolve_order_items(items_in: List[OrderItemInput]) -> tuple[List[OrderItem], float, bool]:
+    """Server-side price + name resolution. Client-supplied prices are ignored."""
+    resolved: List[OrderItem] = []
+    subtotal = 0.0
+    has_pickup = False
+    for it in items_in:
+        product = await db.products.find_one({"slug": it.slug}, {"_id": 0})
+        if not product:
+            raise HTTPException(400, f"Unknown product: {it.slug}")
+        if not product.get("is_available", True):
+            raise HTTPException(400, f"Product is not available: {product.get('name', it.slug)}")
+        # Find matching variant; if the product has no variants, treat the base price as the only variant.
+        variants = product.get("variants") or []
+        if variants:
+            match = next((v for v in variants if v.get("label") == it.variant_label), None)
+            if match is None:
+                raise HTTPException(400, f"Unknown variant '{it.variant_label}' for {product['name']}")
+            unit_price = match.get("price")
+        else:
+            if it.variant_label and it.variant_label != "Regular":
+                raise HTTPException(400, f"Product {product['name']} has no variants")
+            unit_price = product.get("price")
+        if unit_price is None:
+            has_pickup = True
+        else:
+            subtotal += float(unit_price) * it.qty
+        resolved.append(OrderItem(
+            slug=product["slug"],
+            name=product["name"],
+            variant_label=it.variant_label or "Regular",
+            unit_price=unit_price,
+            qty=it.qty,
+        ))
+    return resolved, subtotal, has_pickup
+
+
 @api_router.post("/orders", response_model=Order, status_code=201)
 async def create_order(payload: OrderCreate):
-    if not payload.items:
-        raise HTTPException(400, "Order must have items")
-    subtotal = sum((i.unit_price or 0) * i.qty for i in payload.items)
-    has_pickup = any(i.unit_price is None for i in payload.items)
+    items, subtotal, has_pickup = await _resolve_order_items(payload.items)
     from random import randint
     order_num = f"KHFC-{datetime.now(timezone.utc).strftime('%y%m%d')}-{randint(1000,9999)}"
     obj = Order(
         order_number=order_num,
-        customer_name=payload.customer_name,
-        customer_phone=payload.customer_phone,
-        notes=payload.notes,
-        items=payload.items,
-        subtotal=subtotal,
+        customer_name=payload.customer_name.strip(),
+        customer_phone=payload.customer_phone.strip(),
+        notes=payload.notes.strip(),
+        items=items,
+        subtotal=round(subtotal, 2),
         has_pickup_pricing=has_pickup,
     )
     doc = _serialize_dates(obj.model_dump())
@@ -470,14 +591,22 @@ async def admin_order_stats(admin=Depends(get_current_admin)):
 
 @api_router.patch("/admin/orders/{order_id}", response_model=Order)
 async def admin_update_order_status(order_id: str, payload: OrderStatusUpdate, admin=Depends(get_current_admin)):
-    if payload.status not in VALID_ORDER_STATUSES:
+    new_status = payload.status
+    if new_status not in VALID_ORDER_STATUSES:
         raise HTTPException(400, f"Invalid status. Must be one of: {sorted(VALID_ORDER_STATUSES)}")
-    updates = {"status": payload.status, "updated_at": datetime.now(timezone.utc).isoformat()}
+    existing = await db.orders.find_one({"id": order_id}, {"_id": 0, "status": 1})
+    if not existing:
+        raise HTTPException(404, "Order not found")
+    current = existing.get("status", "received")
+    if new_status != current and new_status not in ORDER_TRANSITIONS.get(current, set()):
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            f"Illegal status transition {current} → {new_status}",
+        )
+    updates = {"status": new_status, "updated_at": datetime.now(timezone.utc).isoformat()}
     res = await db.orders.find_one_and_update(
         {"id": order_id}, {"$set": updates}, projection={"_id": 0}, return_document=True
     )
-    if not res:
-        raise HTTPException(404, "Order not found")
     return _deserialize_dates(res)
 
 
@@ -607,6 +736,8 @@ async def seed_if_empty():
         await db.users.create_index("id", unique=True)
         await db.orders.create_index("id", unique=True)
         await db.orders.create_index("order_number")
+        await db.login_attempts.create_index("identifier")
+        await db.login_attempts.create_index("created_at")
 
         cat_count = await db.categories.count_documents({})
         if cat_count == 0:
@@ -630,8 +761,8 @@ app.include_router(api_router)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_credentials=False,  # Auth uses Bearer in localStorage, not cookies. Wildcard origins are only valid without credentials.
+    allow_origins=[o.strip() for o in os.environ.get('CORS_ORIGINS', '*').split(',') if o.strip()],
     allow_methods=["*"],
     allow_headers=["*"],
 )
