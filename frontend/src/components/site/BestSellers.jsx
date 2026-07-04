@@ -4,12 +4,14 @@ import { toast } from "sonner";
 import { useBestSellers } from "@/lib/hooks";
 
 const ProductCard = ({ product, index }) => {
+  const firstVariantLabel =
+    product.variants && product.variants.length ? product.variants[0].label : null;
   const handleAdd = () => {
     toast.success(`${product.name} added`, {
       description:
-        product.price === null
+        product.price === null || product.price === undefined
           ? "Final price will be confirmed before pickup."
-          : `₹${product.price} · ${product.variants[0]}`,
+          : `₹${product.price}${firstVariantLabel ? ` · ${firstVariantLabel}` : ""}`,
     });
   };
 

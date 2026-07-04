@@ -1,0 +1,16 @@
+{
+  "summary": "Regression retest of the sonner toast bug fix on Best Sellers 'Add' buttons plus Phase 2 render checks. All four assertions passed: Hill Filter Coffee toast title/desc correct, Wild Hill Honey null-price toast desc correct, 15 category cards and 6 best-seller cards render from backend.",
+  "tested_scope": ["frontend", "integration"],
+  "passed": [
+    "Homepage loads without errors on public URL",
+    "Best Sellers renders 6 product cards (backend integration OK)",
+    "Categories renders 15 cards (backend integration OK)",
+    "Add-to-cart on 'Hill Filter Coffee' shows toast title 'Hill Filter Coffee added' and description exactly '₹60 · Small' (bug fixed, no '[object Object]')",
+    "Add-to-cart on 'Wild Hill Honey' (null price) shows toast description exactly 'Final price will be confirmed before pickup.' with no rupee symbol"
+  ],
+  "failed": [],
+  "action_items": [],
+  "success_rate": {"backend": "n/a (not retested this iteration)", "frontend": "100%"},
+  "retest_needed": false,
+  "full_testing_deferred": true
+}
