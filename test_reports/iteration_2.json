@@ -1,0 +1,43 @@
+{
+  "summary": "Phase 2 CRUD + seed + homepage integration verified end-to-end. All backend endpoints (categories, products, filters, POST/PATCH/DELETE, 404s, 409 duplicate) return expected shapes and status codes. Seed is idempotent across backend restart (15 categories, 9 products preserved). Homepage renders 15 category cards and exactly 6 best-seller cards from DB, null-price cards show 'Final price will be confirmed before pickup.', PATCH-then-reload live update to Hill Filter Coffee (\u20b977) reflected on UI (then reverted to \u20b960). Add-to-cart toast fires. One minor UI polish issue found (toast description shows '[object Object]').",
+  "tested_scope": ["backend", "frontend", "integration"],
+  "passed": [
+    "GET /api/categories -> 200, count=15, includes id/name/slug/tag/image/order/is_active",
+    "GET /api/categories/coffee -> 200 with correct payload; unknown slug -> 404",
+    "GET /api/products -> 200, count=9, includes required fields and variants [{label,price}]",
+    "GET /api/products?best_seller=true -> exactly 6 (Hill Filter Coffee, Grilled Garden Sandwich, Chocolate Milkshake, Wild Hill Honey, Estate Chocolate Bar, Traveller's Dry Fruit Mix)",
+    "GET /api/products?category=coffee -> 1 product (Hill Filter Coffee)",
+    "GET /api/products/hill-filter-coffee -> 200; unknown slug -> 404",
+    "POST /api/products with unique slug -> 201; duplicate -> 409",
+    "PATCH /api/products/{slug} price=999 -> 200 and GET reflects new value",
+    "DELETE /api/products/{slug} -> 204 and subsequent GET -> 404",
+    "POST/PATCH/DELETE /api/categories full cycle works (201/200/204)",
+    "Seed idempotency: backend restart kept counts at 15 categories, 9 products (no duplication)",
+    "Homepage / loads; data-testid='categories-section' shows 15 category cards from DB",
+    "data-testid='bestsellers-section' shows 6 product cards using data-testid='product-card-{slug}'",
+    "Live update: PATCH price to 77 then reload homepage -> Hill Filter Coffee card shows \u20b977 (reverted to 60 after test)",
+    "Wild Hill Honey and Traveller's Dry Fruit Mix cards display 'Final price will be confirmed before pickup.' instead of a rupee price",
+    "Clicking data-testid='add-to-cart-hill-filter-coffee' triggers a sonner toast ('Hill Filter Coffee added')"
+  ],
+  "failed": [
+    {
+      "area": "frontend/BestSellers toast",
+      "issue": "Sonner toast description shows literal '[object Object]'. Suggests the toast is receiving a variant object where a string is expected. Card text: 'Hill Filter Coffee added \u20b977 \u00b7 [object Object]'.",
+      "evidence": "Runtime capture: 'Hill Filter Coffee added\\n\u20b977 \u00b7 [object Object]' from toast DOM after clicking add-to-cart on hill-filter-coffee.",
+      "priority": "LOW"
+    },
+    {
+      "area": "testids / review-request mismatch",
+      "issue": "Review request referenced data-testid='bestseller-card-{slug}' and 'add-to-cart-kolli-mountain-brew', but actual DOM uses data-testid='product-card-{slug}' and 'add-to-cart-{slug}'. Not a functional bug \u2014 just aligning documentation. All flows verified using actual testids.",
+      "evidence": "grep BestSellers.jsx -> product-card-${product.slug}, add-to-cart-${product.slug}",
+      "priority": "LOW"
+    }
+  ],
+  "action_items": [
+    "Fix toast description in Add-to-Cart handler on BestSellers card so the variant label/price render as strings (currently emits [object Object])."
+  ],
+  "success_rate": {"backend": "100%", "frontend": "95%"},
+  "retest_needed": false,
+  "full_testing_deferred": true,
+  "cleanup_done": ["Reverted hill-filter-coffee price to 60.0", "Deleted test-product-abc123 and test-cat-abc123"]
+}

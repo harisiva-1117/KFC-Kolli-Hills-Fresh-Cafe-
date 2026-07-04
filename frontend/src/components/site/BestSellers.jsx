@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Star, Plus } from "lucide-react";
 import { toast } from "sonner";
-import { BEST_SELLERS } from "@/lib/cafeData";
+import { useBestSellers } from "@/lib/hooks";
 
 const ProductCard = ({ product, index }) => {
   const handleAdd = () => {
@@ -15,7 +15,7 @@ const ProductCard = ({ product, index }) => {
 
   return (
     <motion.article
-      data-testid={`product-card-${product.id}`}
+      data-testid={`product-card-${product.slug}`}
       initial={{ opacity: 0, y: 50 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-80px" }}
@@ -30,11 +30,11 @@ const ProductCard = ({ product, index }) => {
           className="w-full h-full object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-110"
         />
         <div className="absolute top-4 left-4 bg-[#FDFBF7]/95 backdrop-blur px-3 py-1 text-[10px] uppercase tracking-widest text-[#1E3F20]">
-          {product.category}
+          {product.category_slug ? product.category_slug.replace(/-/g, " ") : ""}
         </div>
         <div className="absolute top-4 right-4 flex items-center gap-1 bg-[#1E3F20] text-[#D4AF37] px-3 py-1 text-xs">
           <Star className="w-3 h-3 fill-[#D4AF37] stroke-[#D4AF37]" />
-          {product.rating.toFixed(1)}
+          {Number(product.rating || 5).toFixed(1)}
         </div>
       </div>
 
@@ -49,19 +49,19 @@ const ProductCard = ({ product, index }) => {
         </div>
 
         <div className="flex flex-wrap gap-2 mt-1">
-          {product.variants.map((v) => (
+          {(product.variants || []).map((v) => (
             <span
-              key={v}
+              key={v.label}
               className="text-[11px] tracking-widest uppercase border border-[#E8E2D9] text-[#4A2E15] px-3 py-1"
             >
-              {v}
+              {v.label}
             </span>
           ))}
         </div>
 
         <div className="mt-auto flex items-end justify-between pt-4 border-t border-[#E8E2D9]">
           <div>
-            {product.price === null ? (
+            {product.price === null || product.price === undefined ? (
               <>
                 <p className="text-[10px] uppercase tracking-widest text-[#4A2E15]">
                   Price on pickup
@@ -83,7 +83,7 @@ const ProductCard = ({ product, index }) => {
           </div>
           <button
             onClick={handleAdd}
-            data-testid={`add-to-cart-${product.id}`}
+            data-testid={`add-to-cart-${product.slug}`}
             className="inline-flex items-center gap-2 bg-[#1E3F20] text-white px-4 py-3 text-xs tracking-widest uppercase hover:bg-[#152C16] transition-colors"
           >
             <Plus className="w-3 h-3" /> Add
@@ -95,6 +95,7 @@ const ProductCard = ({ product, index }) => {
 };
 
 export const BestSellers = () => {
+  const { data: products, loading } = useBestSellers();
   return (
     <section
       id="best-sellers"
@@ -136,9 +137,25 @@ export const BestSellers = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-          {BEST_SELLERS.map((p, i) => (
-            <ProductCard key={p.id} product={p} index={i} />
-          ))}
+          {loading &&
+            Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={`ps-${i}`}
+                data-testid={`bestseller-skeleton-${i}`}
+                className="border border-[#E8E2D9] bg-[#FDFBF7]"
+              >
+                <div className="aspect-[4/3] bg-[#F0EBE3] animate-pulse" />
+                <div className="p-6 space-y-3">
+                  <div className="h-6 w-3/4 bg-[#F0EBE3] animate-pulse" />
+                  <div className="h-4 w-full bg-[#F0EBE3] animate-pulse" />
+                  <div className="h-10 w-1/3 bg-[#F0EBE3] animate-pulse" />
+                </div>
+              </div>
+            ))}
+          {!loading &&
+            products.map((p, i) => (
+              <ProductCard key={p.slug} product={p} index={i} />
+            ))}
         </div>
       </div>
     </section>

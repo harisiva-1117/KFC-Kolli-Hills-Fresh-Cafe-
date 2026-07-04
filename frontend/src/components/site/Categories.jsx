@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
-import { CATEGORIES } from "@/lib/cafeData";
+import { useCategories } from "@/lib/hooks";
 
 const Card = ({ item, index, span }) => (
   <motion.a
@@ -37,6 +37,7 @@ const Card = ({ item, index, span }) => (
 const spans = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""];
 
 export const Categories = () => {
+  const { data: categories, loading } = useCategories();
   return (
     <section
       id="categories"
@@ -71,9 +72,18 @@ export const Categories = () => {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
-          {CATEGORIES.map((c, i) => (
-            <Card key={c.name} item={c} index={i} span={spans[i] || ""} />
-          ))}
+          {loading &&
+            Array.from({ length: 8 }).map((_, i) => (
+              <div
+                key={`skeleton-${i}`}
+                data-testid={`category-skeleton-${i}`}
+                className="aspect-[4/5] bg-[#F0EBE3] animate-pulse"
+              />
+            ))}
+          {!loading &&
+            categories.map((c, i) => (
+              <Card key={c.slug} item={c} index={i} span={spans[i] || ""} />
+            ))}
         </div>
       </div>
     </section>
