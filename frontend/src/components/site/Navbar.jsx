@@ -40,7 +40,7 @@ export const Navbar = () => {
           <img
             src={BRAND.logo}
             alt="Kolli Hills Fresh Cafe"
-            className="h-11 w-11 rounded-full object-cover ring-1 ring-[#D4AF37]/40"
+            className="h-14 w-14 rounded-full object-cover ring-2 ring-[#D4AF37]/60 bg-white"
           />
           <div className="flex flex-col leading-none">
             <span

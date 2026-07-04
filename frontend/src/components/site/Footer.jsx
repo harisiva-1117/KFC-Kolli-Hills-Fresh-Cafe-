@@ -52,7 +52,7 @@ export const Footer = () => {
               <img
                 src={BRAND.logo}
                 alt="Kolli Hills Fresh Cafe"
-                className="h-14 w-14 rounded-full ring-1 ring-[#D4AF37]/40"
+                className="h-16 w-16 rounded-full ring-2 ring-[#D4AF37]/60 bg-white"
               />
               <div>
                 <p className="font-display text-2xl text-white">Kolli Hills</p>

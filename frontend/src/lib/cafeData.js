@@ -8,7 +8,7 @@ export const BRAND = {
   hours: "Open 24 Hours",
   pickup: "Pickup Only",
   prep: "10–15 Minutes Prep",
-  logo: "https://customer-assets.emergentagent.com/job_ec7d6cda-b535-4f11-9e51-cd93b5b477e6/artifacts/b1pzhxj7_Screenshot%202026-07-03%20163632.png",
+  logo: "https://customer-assets.emergentagent.com/job_kolli-mountain-brew/artifacts/ux968jrl_Screenshot%202026-07-03%20163632.png",
   mapsLink: "https://maps.app.goo.gl/XBeX74ddxnQcfs2A7",
   // Embed uses a place search — swapped later with real lat/lng
   mapsEmbed:

@@ -41,14 +41,19 @@ export const Hero = () => {
 
       {/* Main content */}
       <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-6 text-center max-w-6xl mx-auto">
-        <motion.img
-          src={BRAND.logo}
-          alt="Kolli Hills Fresh Cafe logo"
+        <motion.div
           initial={{ scale: 0.6, opacity: 0, rotate: -10 }}
           animate={{ scale: 1, opacity: 1, rotate: 0 }}
           transition={{ delay: 0.3, duration: 1, ease: [0.22, 1, 0.36, 1] }}
-          className="w-24 h-24 md:w-28 md:h-28 rounded-full ring-2 ring-[#D4AF37]/50 shadow-2xl shadow-black/50 mb-8"
-        />
+          className="relative mb-10"
+        >
+          <div className="absolute -inset-6 rounded-full bg-[#D4AF37]/20 blur-2xl animate-pulse" />
+          <img
+            src={BRAND.logo}
+            alt="Kolli Hills Fresh Cafe logo"
+            className="relative w-40 h-40 md:w-48 md:h-48 rounded-full ring-4 ring-[#D4AF37]/60 shadow-[0_20px_80px_rgba(0,0,0,0.6)] bg-white/5"
+          />
+        </motion.div>
 
         <motion.h1
           initial={{ y: 40, opacity: 0 }}

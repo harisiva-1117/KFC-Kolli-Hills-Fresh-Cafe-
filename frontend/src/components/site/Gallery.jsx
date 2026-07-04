@@ -3,12 +3,12 @@ import { GALLERY } from "@/lib/cafeData";
 
 // Bento layout classes for masonry feel
 const layout = [
-  "md:col-span-2 md:row-span-2 aspect-square md:aspect-auto",
+  "md:col-span-2 aspect-[4/5]",
   "aspect-[4/5]",
   "aspect-[4/5]",
-  "md:col-span-2 aspect-[16/9]",
   "aspect-[4/5]",
   "aspect-[4/5]",
+  "md:col-span-2 aspect-[4/5]",
 ];
 
 export const Gallery = () => {
