@@ -1,0 +1,19 @@
+{
+  "summary": "Retest of iteration_5 failures after Phase 3 bug fixes (CartContext ready-gate + Navbar SPA Link). All 3 previously-failed items now PASS. Cart persists to localStorage['khfc_cart_v1'], survives SPA nav to /menu, survives F5 reload, checkout flow reaches /order/:id with correct KHFC-YYMMDD-NNNN order_number and RECEIVED as active stepper step.",
+  "tested_scope": ["frontend", "integration"],
+  "passed": [
+    "Add Hill Filter Coffee on / → cart badge shows 1",
+    "localStorage['khfc_cart_v1'] contains hill-filter-coffee item after add (verified via page.evaluate)",
+    "SPA nav via Menu link (navbar-menu Link) → /menu preserves cart (drawer shows Hill Filter Coffee, no 'basket is empty')",
+    "F5 reload on /menu preserves cart (localStorage restored, drawer still shows Hill Filter Coffee)",
+    "/checkout: place-order-btn ENABLED after filling name='Test User' + phone='+919999999999'",
+    "POST /api/orders success → navigated to /order/7e09c50c-9238-4396-a5ca-2a330522978c",
+    "Order confirmation page shows Order Number KHFC-260704-3108, item '1 × Hill Filter Coffee SMALL ₹40', SUBTOTAL ₹40, and RECEIVED as active step in the 4-step stepper (Received/Confirmed/Ready for pickup/Collected)"
+  ],
+  "failed": [],
+  "action_items": [],
+  "success_rate": {"backend": "n/a (frontend-only retest)", "frontend": "100%"},
+  "retest_needed": false,
+  "full_testing_deferred": true,
+  "notes": "Minor: variant-masala-chai click on /menu was intercepted by cart-backdrop in one substep because a previously opened drawer was still closing — not a bug, and did not block the primary flow (Hill Filter Coffee already persisted). Bug fixes for CartContext ready-flag and Navbar <Link to='/menu'> are confirmed working end-to-end."
+}

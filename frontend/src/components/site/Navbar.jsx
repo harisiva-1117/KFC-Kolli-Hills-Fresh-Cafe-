@@ -63,19 +63,22 @@ export const Navbar = ({ onCartOpen, solid = false }) => {
         </a>
 
         <nav className="hidden lg:flex items-center gap-10">
-          {NAV_LINKS.map((l) => (
-            <a
-              key={l.href}
-              href={l.href}
-              data-testid={`nav-link-${l.label.toLowerCase().replace(/\s+/g, "-")}`}
-              className={`text-sm tracking-wide relative group ${
-                scrolled ? "text-[#1F1F1F]" : "text-white"
-              }`}
-            >
-              {l.label}
-              <span className="absolute left-0 -bottom-1 h-px w-0 bg-[#D4AF37] transition-all duration-500 group-hover:w-full" />
-            </a>
-          ))}
+          {NAV_LINKS.map((l) => {
+            const isRoute = l.href.startsWith("/") && !l.href.includes("#");
+            const cls = `text-sm tracking-wide relative group ${scrolled ? "text-[#1F1F1F]" : "text-white"}`;
+            const testid = `nav-link-${l.label.toLowerCase().replace(/\s+/g, "-")}`;
+            return isRoute ? (
+              <Link key={l.href} to={l.href} data-testid={testid} className={cls}>
+                {l.label}
+                <span className="absolute left-0 -bottom-1 h-px w-0 bg-[#D4AF37] transition-all duration-500 group-hover:w-full" />
+              </Link>
+            ) : (
+              <a key={l.href} href={l.href} data-testid={testid} className={cls}>
+                {l.label}
+                <span className="absolute left-0 -bottom-1 h-px w-0 bg-[#D4AF37] transition-all duration-500 group-hover:w-full" />
+              </a>
+            );
+          })}
         </nav>
 
         <div className="hidden lg:flex items-center gap-3">

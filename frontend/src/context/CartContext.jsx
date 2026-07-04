@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useReducer } from "react";
+import { createContext, useContext, useEffect, useMemo, useReducer, useState } from "react";
 
 const KEY = "khfc_cart_v1";
 const CartContext = createContext(null);
@@ -62,13 +62,16 @@ const reducer = (state, action) => {
 
 export function CartProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, { items: [] });
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     dispatch({ type: "HYDRATE", state: load() });
+    setReady(true);
   }, []);
   useEffect(() => {
+    if (!ready) return;
     localStorage.setItem(KEY, JSON.stringify(state));
-  }, [state]);
+  }, [state, ready]);
 
   const value = useMemo(() => {
     const subtotal = state.items.reduce(
