@@ -1,0 +1,19 @@
+{
+  "summary": "Frontend regression pass after removing hardcoded product/category arrays from cafeData.js. Homepage loads cleanly, categories (15) and bestsellers (6) are fetched from the API, all supporting sections render, add-to-cart toasts show correct copy, and live PATCH price update reflects on the UI. Price reverted to 60.0.",
+  "tested_scope": ["frontend", "integration"],
+  "passed": [
+    "GET / homepage loads with no page errors and no DOM error nodes",
+    "data-testid=categories-section renders exactly 15 category cards (from GET /api/categories)",
+    "data-testid=bestsellers-section renders exactly 6 product cards (from GET /api/products?best_seller=true)",
+    "hero-section, gallery-section, reviews-section, contact-section, navbar and footer all render (BRAND/HERO_IMAGE/GALLERY/REVIEWS still imported from cafeData)",
+    "Hill Filter Coffee Add toast contains '₹60 · Small'",
+    "Wild Hill Honey Add toast contains 'Final price will be confirmed before pickup.'",
+    "Live update sanity: PATCH /api/products/hill-filter-coffee price=55.0 → card shows ₹55; reverted to 60.0 (HTTP 200, GET confirms price=60.0)"
+  ],
+  "failed": [],
+  "action_items": [],
+  "success_rate": {"backend": "not tested (deferred, only 1 PATCH+GET live-update check ran, both 200)", "frontend": "100%"},
+  "retest_needed": false,
+  "full_testing_deferred": true,
+  "notes": "Only 1 non-critical console line captured ('Found 1 images') — informational, not an error. No import errors after cafeData.js cleanup. Hill Filter Coffee price restored to 60.0 as required."
+}
