@@ -18,7 +18,26 @@ The site must combine Nature + Premium Cafe + Modern Shopping + Travel + Hospita
 - Framer Motion for all animations.
 
 ## What's Been Implemented — Feb 2026
-### ✅ Homepage v1 (this iteration)
+
+### ✅ Phase 2 — MongoDB CRUD + Live Data (Feb 2026)
+- **Backend** (`/app/backend/server.py`):
+  - `Category` model + full CRUD: `GET/POST /api/categories`, `GET/PATCH/DELETE /api/categories/{slug}`.
+  - `Product` model with `ProductVariant[{label, price}]` + full CRUD: `GET/POST /api/products` (with filters `?category=`, `?best_seller=`, `?available_only=`), `GET/PATCH/DELETE /api/products/{slug}`.
+  - Unique indexes on `slug`; secondary indexes on `category_slug`, `is_best_seller`.
+  - `seed_if_empty()` on startup — 15 categories + 9 products (6 best-sellers). Idempotent (verified: restart preserves counts).
+  - Legacy `StatusCheck` endpoints kept for compat.
+- **Frontend**:
+  - `/app/frontend/src/lib/api.js` — fetch client using `REACT_APP_BACKEND_URL`.
+  - `/app/frontend/src/lib/hooks.js` — `useCategories`, `useBestSellers`, `useProducts` with loading/error/skeleton states.
+  - `Categories.jsx` now consumes `useCategories()` → renders 15 cards from DB.
+  - `BestSellers.jsx` now consumes `useBestSellers()` → renders 6 cards from DB with real variants `[{label, price}]`.
+  - UI unchanged from Phase 1 — pure data-source swap.
+- **Verified** (testing_agent iteration_2 + iteration_3):
+  - All CRUD endpoints, 404s, 409 duplicates, 204 deletes.
+  - Live update flow: PATCH price → reload homepage → new price visible (no redeploy).
+  - Skeleton loading states + correct null-price rendering.
+
+### ✅ Homepage v1 (previous iteration)
 - **Design system**: Playfair Display (display) + Work Sans (body), forest/coffee/gold/cream palette, grain overlay, custom scrollbar, gold underline hover.
 - **Navigation**: Sticky glassmorphism navbar with mobile menu, transparent-over-hero → cream-when-scrolled state.
 - **Premium Hero**: cinematic misty forest background, animated logo entry, "Taste the Freshness of Kolli Hills" headline with italic gold "Freshness", Order/Explore CTAs, 24/7 & pickup meta bar, animated scroll indicator, category marquee strip.
