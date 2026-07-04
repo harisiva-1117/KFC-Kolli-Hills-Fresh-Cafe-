@@ -1,4 +1,5 @@
 import { Toaster } from "sonner";
+import { useState } from "react";
 import Navbar from "@/components/site/Navbar";
 import Hero from "@/components/site/Hero";
 import Categories from "@/components/site/Categories";
@@ -8,15 +9,17 @@ import Gallery from "@/components/site/Gallery";
 import Reviews from "@/components/site/Reviews";
 import ContactLocation from "@/components/site/ContactLocation";
 import Footer from "@/components/site/Footer";
+import { CartDrawer } from "@/components/site/CartDrawer";
 
 const HomePage = () => {
+  const [cartOpen, setCartOpen] = useState(false);
   return (
     <div
       data-testid="home-page"
       className="relative bg-[#FDFBF7] text-[#1F1F1F] font-body"
     >
       <div className="grain-overlay" aria-hidden="true" />
-      <Navbar />
+      <Navbar onCartOpen={() => setCartOpen(true)} />
       <main>
         <Hero />
         <Categories />
@@ -27,6 +30,7 @@ const HomePage = () => {
         <ContactLocation />
       </main>
       <Footer />
+      <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
       <Toaster
         position="bottom-right"
         theme="light"

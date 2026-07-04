@@ -1,27 +1,29 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Phone } from "lucide-react";
+import { Link } from "react-router-dom";
 import { BRAND } from "@/lib/cafeData";
+import { CartButton } from "@/components/site/CartDrawer";
 
 const NAV_LINKS = [
-  { label: "Home", href: "#top" },
-  { label: "Menu", href: "#categories" },
-  { label: "Best Sellers", href: "#best-sellers" },
-  { label: "Our Story", href: "#story" },
-  { label: "Gallery", href: "#gallery" },
-  { label: "Visit", href: "#contact" },
+  { label: "Home", href: "/#top" },
+  { label: "Menu", href: "/menu" },
+  { label: "Our Story", href: "/#story" },
+  { label: "Gallery", href: "/#gallery" },
+  { label: "Visit", href: "/#contact" },
 ];
 
-export const Navbar = () => {
-  const [scrolled, setScrolled] = useState(false);
+export const Navbar = ({ onCartOpen, solid = false }) => {
+  const [scrolled, setScrolled] = useState(solid);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
+    if (solid) { setScrolled(true); return; }
     const onScroll = () => setScrolled(window.scrollY > 40);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [solid]);
 
   return (
     <motion.header
@@ -87,13 +89,16 @@ export const Navbar = () => {
             <Phone className="w-4 h-4" />
             {BRAND.phone}
           </a>
-          <a
-            href="#best-sellers"
+          <span className={scrolled ? "text-[#1E3F20]" : "text-white"}>
+            {onCartOpen && <CartButton onOpen={onCartOpen} />}
+          </span>
+          <Link
+            to="/menu"
             data-testid="navbar-order-btn"
             className="inline-flex items-center gap-2 bg-[#1E3F20] text-white px-5 py-3 text-sm tracking-wide hover:bg-[#152C16] transition-colors"
           >
             Order Now
-          </a>
+          </Link>
         </div>
 
         <button

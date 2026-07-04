@@ -84,7 +84,7 @@ export const Hero = () => {
           className="mt-10 flex flex-col sm:flex-row items-center gap-4"
         >
           <a
-            href="#best-sellers"
+            href="/menu"
             data-testid="hero-order-btn"
             className="group inline-flex items-center gap-3 bg-[#D4AF37] text-[#1F1F1F] px-8 py-4 text-sm font-medium tracking-widest uppercase hover:bg-[#e6c157] transition-all duration-500"
           >
@@ -92,7 +92,7 @@ export const Hero = () => {
             <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
           </a>
           <a
-            href="#categories"
+            href="/menu"
             data-testid="hero-menu-btn"
             className="group inline-flex items-center gap-3 border border-white/60 text-white px-8 py-4 text-sm font-medium tracking-widest uppercase hover:bg-white hover:text-[#1E3F20] transition-all duration-500"
           >

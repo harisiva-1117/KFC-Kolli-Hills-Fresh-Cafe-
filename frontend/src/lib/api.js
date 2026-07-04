@@ -30,6 +30,10 @@ export const api = {
     return request(`/products?${p.toString()}`);
   },
   getProduct: (slug) => request(`/products/${slug}`),
+
+  createOrder: (body) =>
+    request(`/orders`, { method: "POST", body: JSON.stringify(body) }),
+  getOrder: (orderId) => request(`/orders/${orderId}`),
 };
 
 export default api;

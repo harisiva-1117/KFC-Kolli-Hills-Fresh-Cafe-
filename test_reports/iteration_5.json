@@ -1,0 +1,44 @@
+{
+  "summary": "Ordering flow end-to-end test. Backend (categories, products, POST /api/orders, GET /api/orders/{id}) all working. Homepage regression fine — cart-open-btn added to navbar. Add-to-cart from homepage populates drawer correctly. HOWEVER: cart state is lost on every route change AND localStorage persistence is completely absent, which fully blocks checkout → order confirmation flow.",
+  "tested_scope": ["frontend", "backend", "integration"],
+  "passed": [
+    "GET /api/ → 200",
+    "GET /api/products → 200, 9 products, hill-filter-coffee price 60.0",
+    "POST /api/orders → 201, order_number=KHFC-260704-3186, subtotal correct",
+    "GET /api/orders/{id} → 200, items preserved",
+    "Homepage renders, cart-open-btn visible in navbar",
+    "add-to-cart-hill-filter-coffee adds item, drawer shows 'Hill Filter Coffee SMALL 1 ₹40 Subtotal ₹40'",
+    "cart-drawer opens/closes (X, backdrop, Escape)",
+    "MenuPage loads with 9 menu-product tiles, variant-masala-chai-Regular click + menu-add-masala-chai click works",
+    "Checkout page renders with checkout-name & checkout-phone inputs; Place Order button correctly disabled when cart empty"
+  ],
+  "failed": [
+    {
+      "area": "Cart persistence (localStorage)",
+      "issue": "Cart items are NEVER written to localStorage. After adding Hill Filter Coffee on / , dumping localStorage shows only PostHog keys — no cart key. CartContext localStorage sync is broken or absent.",
+      "evidence": "page.evaluate over Object.entries(localStorage) after add-to-cart: only 'ph_phc_..._posthog' key present, no cart entry.",
+      "priority": "HIGH"
+    },
+    {
+      "area": "Cart state across route change",
+      "issue": "Even without page reload, clicking the Menu link (SPA nav) after adding an item causes drawer on /menu to show '0 items — Your basket is empty'. CartProvider is likely being remounted per-route instead of at App root, OR the nav link is an <a href> forcing hard reload.",
+      "evidence": "Home: added 1 item, drawer shows '1 item'. Click Menu nav link → /menu → open drawer → '0 items'.",
+      "priority": "HIGH"
+    },
+    {
+      "area": "Checkout → Order flow blocked",
+      "issue": "Because cart doesn't persist, /checkout always shows 'Your basket is empty' and 'Place Pickup Order' button stays disabled even after filling valid name='Test User' and phone='+919999999999'. Cannot POST /api/orders from UI.",
+      "evidence": "Screenshot: order summary sidebar shows 'Your basket is empty.'; place-order button remains disabled after fill.",
+      "priority": "HIGH"
+    }
+  ],
+  "action_items": [
+    "Verify CartProvider is mounted at the App root (wrapping <BrowserRouter>/<Routes>), not inside a route component that unmounts on navigation.",
+    "Verify CartContext reducer has a useEffect(() => localStorage.setItem('cart', JSON.stringify(state)), [state]) AND that the initial state reads from localStorage.getItem('cart').",
+    "Ensure Navbar links use react-router <Link> not raw <a href> (a raw <a> would hard-reload and, combined with missing localStorage, wipe the cart).",
+    "After fix, retest full flow: add on / → nav to /menu → nav to /checkout → fill form → Place Order → land on /order/:id showing KHFC-YYMMDD-NNNN and 'Received' active step."
+  ],
+  "success_rate": {"backend": "100%", "frontend": "50%"},
+  "retest_needed": true,
+  "full_testing_deferred": true
+}

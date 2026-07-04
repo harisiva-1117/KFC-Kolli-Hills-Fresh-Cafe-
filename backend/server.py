@@ -259,6 +259,67 @@ async def delete_product(slug: str):
     return None
 
 
+# ---------- Order ----------
+class OrderItem(BaseModel):
+    slug: str
+    name: str
+    variant_label: str
+    unit_price: Optional[float] = None
+    qty: int
+
+
+class OrderCreate(BaseModel):
+    customer_name: str
+    customer_phone: str
+    notes: str = ""
+    items: List[OrderItem]
+
+
+class Order(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    order_number: str
+    customer_name: str
+    customer_phone: str
+    notes: str = ""
+    items: List[OrderItem]
+    subtotal: float = 0
+    has_pickup_pricing: bool = False
+    status: str = "received"  # received | confirmed | ready | collected
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+@api_router.post("/orders", response_model=Order, status_code=201)
+async def create_order(payload: OrderCreate):
+    if not payload.items:
+        raise HTTPException(400, "Order must have items")
+    subtotal = sum((i.unit_price or 0) * i.qty for i in payload.items)
+    has_pickup = any(i.unit_price is None for i in payload.items)
+    from random import randint
+    order_num = f"KHFC-{datetime.now(timezone.utc).strftime('%y%m%d')}-{randint(1000,9999)}"
+    obj = Order(
+        order_number=order_num,
+        customer_name=payload.customer_name,
+        customer_phone=payload.customer_phone,
+        notes=payload.notes,
+        items=payload.items,
+        subtotal=subtotal,
+        has_pickup_pricing=has_pickup,
+    )
+    doc = _serialize_dates(obj.model_dump())
+    await db.orders.insert_one(doc)
+    return obj
+
+
+@api_router.get("/orders/{order_id}", response_model=Order)
+async def get_order(order_id: str):
+    doc = await db.orders.find_one({"id": order_id}, {"_id": 0})
+    if not doc:
+        raise HTTPException(404, "Order not found")
+    return _deserialize_dates(doc)
+
+
 # ---------- Seed data ----------
 SEED_CATEGORIES = [
     {"name": "Tea", "slug": "tea", "tag": "Hand-picked leaves", "order": 1,

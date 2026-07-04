@@ -2,16 +2,20 @@ import { motion } from "framer-motion";
 import { Star, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useBestSellers } from "@/lib/hooks";
+import { useCart } from "@/context/CartContext";
 
 const ProductCard = ({ product, index }) => {
-  const firstVariantLabel =
-    product.variants && product.variants.length ? product.variants[0].label : null;
+  const { add } = useCart();
   const handleAdd = () => {
+    const variant = product.variants && product.variants.length
+      ? product.variants[0]
+      : { label: "Regular", price: product.price };
+    add(product, variant);
     toast.success(`${product.name} added`, {
       description:
-        product.price === null || product.price === undefined
+        variant.price == null
           ? "Final price will be confirmed before pickup."
-          : `₹${product.price}${firstVariantLabel ? ` · ${firstVariantLabel}` : ""}`,
+          : `₹${variant.price} · ${variant.label}`,
     });
   };
 
