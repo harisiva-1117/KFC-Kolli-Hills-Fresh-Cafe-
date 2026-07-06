@@ -151,7 +151,7 @@ const OrderConfirmationPage = () => {
                     <p className="font-display text-lg text-[#1E3F20]">
                       {it.unit_price == null
                         ? "On pickup"
-                        : `₹${it.unit_price * it.qty}`}
+                        : `₹${it.unit_price * it.quantity}`}
                     </p>
                   </div>
                 ))}
@@ -160,7 +160,7 @@ const OrderConfirmationPage = () => {
                     Subtotal
                   </p>
                   <p className="font-display text-2xl text-[#1E3F20]">
-                    ₹{order.subtotal}
+                    ₹{order.total}
                   </p>
                 </div>
               </div>

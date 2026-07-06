@@ -4,6 +4,7 @@ import HomePage from "@/pages/HomePage";
 import MenuPage from "@/pages/MenuPage";
 import CheckoutPage from "@/pages/CheckoutPage";
 import OrderConfirmationPage from "@/pages/OrderConfirmationPage";
+import Login from "@/admin/pages/Login";
 import { CartProvider } from "@/context/CartContext";
 
 function App() {
@@ -11,12 +12,15 @@ function App() {
     <div className="App">
       <CartProvider>
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/menu" element={<MenuPage />} />
-            <Route path="/checkout" element={<CheckoutPage />} />
-            <Route path="/order/:id" element={<OrderConfirmationPage />} />
-          </Routes>
+         <Routes>
+  <Route path="/" element={<HomePage />} />
+  <Route path="/menu" element={<MenuPage />} />
+  <Route path="/checkout" element={<CheckoutPage />} />
+  <Route path="/order/:id" element={<OrderConfirmationPage />} />
+
+  {/* Admin */}
+  <Route path="/admin/login" element={<Login />} />
+</Routes>
         </BrowserRouter>
       </CartProvider>
     </div>

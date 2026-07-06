@@ -23,18 +23,22 @@ const CheckoutPage = () => {
     if (!canSubmit) return;
     setSubmitting(true);
     try {
-      const order = await api.createOrder({
-        customer_name: form.name.trim(),
-        customer_phone: form.phone.trim(),
-        notes: form.notes.trim(),
-        items: items.map((i) => ({
-          slug: i.slug,
-          name: i.name,
-          variant_label: i.variant_label,
-          unit_price: i.unit_price,
-          qty: i.qty,
-        })),
-      });
+     const order = await api.createOrder({
+  customer_name: form.name.trim(),
+  customer_phone: form.phone.trim(),
+
+  // Required by backend
+  pickup_time: "ASAP",
+
+  notes: form.notes.trim(),
+
+  items: items.map((i) => ({
+    product_slug: i.slug,
+    variant_label: i.variant_label,
+    quantity: i.qty,
+    unit_price: i.unit_price,
+  })),
+});
       clear();
       toast.success("Order placed!", {
         description: `Order #${order.order_number}`,

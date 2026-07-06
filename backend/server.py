@@ -10,126 +10,46 @@ from typing import List, Optional
 import uuid
 from datetime import datetime, timezone
 
+from app.models.status import StatusCheck, StatusCheckCreate
+
+from app.models.category import (
+    Category,
+    CategoryCreate,
+    CategoryUpdate,
+)
+from app.models.order import (
+    Order,
+    OrderCreate,
+    OrderItem,
+)
+from app.utils.helpers import (
+    _serialize_dates,
+    _deserialize_dates,
+)
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
 # MongoDB connection
-mongo_url = os.environ['MONGO_URL']
+# MongoDB connection
+mongo_url = os.environ["MONGO_URL"]
+
+print("Mongo URL:", mongo_url)
+print("DB Name:", os.environ["DB_NAME"])
+
 client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+db = client[os.environ["DB_NAME"]]
 
 app = FastAPI(title="Kolli Hills Fresh Cafe API")
 api_router = APIRouter(prefix="/api")
 
-
-# ---------- Legacy demo model (kept for compat) ----------
-class StatusCheck(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+from app.models.product import (
+    Product,
+    ProductCreate,
+    ProductUpdate,
+)
 
 
-class StatusCheckCreate(BaseModel):
-    client_name: str
-
-
-# ---------- Category ----------
-class CategoryBase(BaseModel):
-    name: str
-    slug: str
-    tag: str = ""
-    image: str = ""
-    order: int = 0
-    is_active: bool = True
-
-
-class CategoryCreate(CategoryBase):
-    pass
-
-
-class CategoryUpdate(BaseModel):
-    name: Optional[str] = None
-    slug: Optional[str] = None
-    tag: Optional[str] = None
-    image: Optional[str] = None
-    order: Optional[int] = None
-    is_active: Optional[bool] = None
-
-
-class Category(CategoryBase):
-    model_config = ConfigDict(extra="ignore")
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-
-# ---------- Product ----------
-class ProductVariant(BaseModel):
-    label: str
-    price: Optional[float] = None  # None => "price on pickup"
-
-
-class ProductBase(BaseModel):
-    name: str
-    slug: str
-    category_slug: str
-    description: str = ""
-    note: str = ""
-    image: str = ""
-    price: Optional[float] = None  # base/starting price; None => "price on pickup"
-    variants: List[ProductVariant] = []
-    rating: float = 5.0
-    is_best_seller: bool = False
-    is_available: bool = True
-    order: int = 0
-
-
-class ProductCreate(ProductBase):
-    pass
-
-
-class ProductUpdate(BaseModel):
-    name: Optional[str] = None
-    slug: Optional[str] = None
-    category_slug: Optional[str] = None
-    description: Optional[str] = None
-    note: Optional[str] = None
-    image: Optional[str] = None
-    price: Optional[float] = None
-    variants: Optional[List[ProductVariant]] = None
-    rating: Optional[float] = None
-    is_best_seller: Optional[bool] = None
-    is_available: Optional[bool] = None
-    order: Optional[int] = None
-
-
-class Product(ProductBase):
-    model_config = ConfigDict(extra="ignore")
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-
-# ---------- Helpers ----------
-def _serialize_dates(doc: dict) -> dict:
-    for k in ("created_at", "updated_at", "timestamp"):
-        v = doc.get(k)
-        if isinstance(v, datetime):
-            doc[k] = v.isoformat()
-    return doc
-
-
-def _deserialize_dates(doc: dict) -> dict:
-    for k in ("created_at", "updated_at", "timestamp"):
-        v = doc.get(k)
-        if isinstance(v, str):
-            try:
-                doc[k] = datetime.fromisoformat(v)
-            except ValueError:
-                pass
-    return doc
 
 
 # ---------- Routes: root & legacy ----------
@@ -259,58 +179,30 @@ async def delete_product(slug: str):
     return None
 
 
-# ---------- Order ----------
-class OrderItem(BaseModel):
-    slug: str
-    name: str
-    variant_label: str
-    unit_price: Optional[float] = None
-    qty: int
-
-
-class OrderCreate(BaseModel):
-    customer_name: str
-    customer_phone: str
-    notes: str = ""
-    items: List[OrderItem]
-
-
-class Order(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    order_number: str
-    customer_name: str
-    customer_phone: str
-    notes: str = ""
-    items: List[OrderItem]
-    subtotal: float = 0
-    has_pickup_pricing: bool = False
-    status: str = "received"  # received | confirmed | ready | collected
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
 
 @api_router.post("/orders", response_model=Order, status_code=201)
 async def create_order(payload: OrderCreate):
     if not payload.items:
         raise HTTPException(400, "Order must have items")
-    subtotal = sum((i.unit_price or 0) * i.qty for i in payload.items)
+
+    subtotal = sum((i.unit_price or 0) * i.quantity for i in payload.items)
     has_pickup = any(i.unit_price is None for i in payload.items)
+
     from random import randint
     order_num = f"KHFC-{datetime.now(timezone.utc).strftime('%y%m%d')}-{randint(1000,9999)}"
+
     obj = Order(
-        order_number=order_num,
         customer_name=payload.customer_name,
         customer_phone=payload.customer_phone,
-        notes=payload.notes,
+        pickup_time=payload.pickup_time,
         items=payload.items,
-        subtotal=subtotal,
-        has_pickup_pricing=has_pickup,
+        notes=payload.notes,
+        total=subtotal,
     )
+
     doc = _serialize_dates(obj.model_dump())
     await db.orders.insert_one(doc)
     return obj
-
 
 @api_router.get("/orders/{order_id}", response_model=Order)
 async def get_order(order_id: str):
