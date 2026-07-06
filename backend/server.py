@@ -177,7 +177,16 @@ async def delete_product(slug: str):
     if res.deleted_count == 0:
         raise HTTPException(404, "Product not found")
     return None
+@api_router.get("/orders", response_model=List[Order])
+async def list_orders(limit: int = 500):
+    rows = (
+        await db.orders
+        .find({}, {"_id": 0})
+        .sort("created_at", -1)
+        .to_list(limit)
+    )
 
+    return [_deserialize_dates(r) for r in rows]
 
 
 @api_router.post("/orders", response_model=Order, status_code=201)
@@ -210,6 +219,28 @@ async def get_order(order_id: str):
     if not doc:
         raise HTTPException(404, "Order not found")
     return _deserialize_dates(doc)
+class OrderStatusUpdate(BaseModel):
+    status: str
+
+
+@api_router.patch("/orders/{order_id}/status", response_model=Order)
+async def update_order_status(order_id: str, payload: OrderStatusUpdate):
+    res = await db.orders.find_one_and_update(
+        {"id": order_id},
+        {
+            "$set": {
+                "status": payload.status,
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+            }
+        },
+        projection={"_id": 0},
+        return_document=True,
+    )
+
+    if not res:
+        raise HTTPException(404, "Order not found")
+
+    return _deserialize_dates(res)
 
 
 # ---------- Seed data ----------

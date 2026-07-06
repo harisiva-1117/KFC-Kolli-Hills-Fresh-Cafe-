@@ -20,6 +20,8 @@ import Settings from "@/admin/pages/Settings";
 import { CartProvider } from "@/context/CartContext";
 import AddProduct from "@/admin/pages/AddProduct";
 import EditProduct from "@/admin/pages/EditProduct";
+import AddCategory from "@/admin/pages/AddCategory";
+import EditCategory from "@/admin/pages/EditCategory";
 
 function App() {
   return (
@@ -49,6 +51,8 @@ function App() {
               <Route path="orders" element={<Orders />} />
               <Route path="messages" element={<Messages />} />
               <Route path="settings" element={<Settings />} />
+              <Route path="categories/add" element={<AddCategory />} />
+              <Route path="categories/edit/:slug" element={<EditCategory />} />
             </Route>
 
           </Routes>

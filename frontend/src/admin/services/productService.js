@@ -33,5 +33,32 @@ export const getProduct = async (slug) => {
   const response = await API.get(`/products/${slug}`);
   return response.data;
 };
+export const createCategory = async (category) => {
+  const response = await API.post("/categories", category);
+  return response.data;
+};
 
+export const updateCategory = async (slug, category) => {
+  const response = await API.patch(`/categories/${slug}`, category);
+  return response.data;
+};
+
+export const deleteCategory = async (slug) => {
+  await API.delete(`/categories/${slug}`);
+};
+export const getCategory = async (slug) => {
+  const response = await API.get(`/categories/${slug}`);
+  return response.data;
+};
+export const getOrders = async () => {
+  const response = await API.get("/orders");
+  return response.data;
+};
+export const updateOrderStatus = async (id, status) => {
+  const response = await API.patch(`/orders/${id}/status`, {
+    status,
+  });
+
+  return response.data;
+};
 export default API;
