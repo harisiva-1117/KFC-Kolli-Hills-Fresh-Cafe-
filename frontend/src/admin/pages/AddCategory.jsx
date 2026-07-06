@@ -1,9 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createCategory } from "../services/productService";
+import {
+  createCategory,
+  uploadImage,
+} from "../services/productService";
 
 const AddCategory = () => {
   const navigate = useNavigate();
+  const [file, setFile] = useState(null);
+const [uploading, setUploading] = useState(false);
 
   const [form, setForm] = useState({
     name: "",
@@ -23,23 +28,45 @@ const AddCategory = () => {
     });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    try {
-      await createCategory({
-        ...form,
-        order: Number(form.order),
-      });
+  try {
+    let imageUrl = form.image;
 
-      alert("Category Added Successfully");
+    if (file) {
+      setUploading(true);
 
-      navigate("/admin/categories");
-    } catch (err) {
-      console.error(err);
-      alert("Failed to add category");
+      const result = await uploadImage(file);
+
+      imageUrl = result.url;
+
+      setUploading(false);
     }
-  };
+
+    const slug = form.name
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "");
+
+    await createCategory({
+      ...form,
+      slug: slug,
+      image: imageUrl,
+      order: Number(form.order),
+    });
+
+    alert("Category Added Successfully");
+
+    navigate("/admin/categories");
+
+  } catch (err) {
+    console.error(err);
+    alert("Failed to add category");
+    setUploading(false);
+  }
+};
 
   return (
     <div className="max-w-2xl mx-auto bg-white rounded-xl shadow p-8">
@@ -58,14 +85,19 @@ const AddCategory = () => {
           required
         />
 
-        <input
-          name="slug"
-          value={form.slug}
-          onChange={handleChange}
-          className="w-full border p-3 rounded"
-          placeholder="Slug"
-          required
-        />
+        <div>
+  <label className="font-semibold block mb-2">
+    Choose Category Image
+  </label>
+
+  <input
+    type="file"
+    accept="image/*"
+    onChange={(e) => setFile(e.target.files[0])}
+    className="w-full border p-3 rounded"
+    required
+  />
+</div>
 
         <input
           name="tag"
@@ -103,11 +135,12 @@ const AddCategory = () => {
         </label>
 
         <button
-          type="submit"
-          className="bg-[#2E1B18] text-white px-6 py-3 rounded-lg hover:bg-[#4B2E2A]"
-        >
-          Save Category
-        </button>
+  type="submit"
+  disabled={uploading}
+  className="bg-[#2E1B18] text-white px-6 py-3 rounded-lg hover:bg-[#4B2E2A]"
+>
+  {uploading ? "Uploading..." : "Save Category"}
+</button>
 
       </form>
     </div>

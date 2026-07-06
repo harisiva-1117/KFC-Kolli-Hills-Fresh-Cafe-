@@ -1,5 +1,6 @@
 import axios from "axios";
 
+
 const API = axios.create({
   baseURL: "http://localhost:8001/api",
   headers: {
@@ -58,6 +59,57 @@ export const updateOrderStatus = async (id, status) => {
   const response = await API.patch(`/orders/${id}/status`, {
     status,
   });
+
+  return response.data;
+};
+export const getGallery = async () => {
+  const response = await API.get("/gallery");
+  return response.data;
+};
+
+export const createGallery = async (image) => {
+  const response = await API.post("/gallery", image);
+  return response.data;
+};
+
+export const deleteGallery = async (title) => {
+  await API.delete(`/gallery/${title}`);
+};
+export const getMessages = async () => {
+  const response = await API.get("/messages");
+  return response.data;
+};
+
+export const createMessage = async (message) => {
+  const response = await API.post("/messages", message);
+  return response.data;
+};
+
+export const deleteMessage = async (email) => {
+  await API.delete(`/messages/${email}`);
+};
+export const getSettings = async () => {
+  const response = await API.get("/settings");
+  return response.data;
+};
+
+export const updateSettings = async (settings) => {
+  const response = await API.put("/settings", settings);
+  return response.data;
+};
+export const uploadImage = async (file) => {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await axios.post(
+    "http://localhost:8001/api/upload",
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
 
   return response.data;
 };

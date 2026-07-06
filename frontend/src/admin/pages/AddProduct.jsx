@@ -1,11 +1,17 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getCategories, createProduct } from "../services/productService";
+import {
+  getCategories,
+  createProduct,
+  uploadImage,
+} from "../services/productService";
 
 const AddProduct = () => {
   const navigate = useNavigate();
 
   const [categories, setCategories] = useState([]);
+  const [file, setFile] = useState(null);
+const [uploading, setUploading] = useState(false);
 
   const [form, setForm] = useState({
     name: "",
@@ -49,30 +55,44 @@ const AddProduct = () => {
     });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    try {
-      await createProduct({
-  ...form,
-  price: Number(form.price),
-  order: Number(form.order),
-  variants: [
-    {
-      label: "Regular",
-      price: Number(form.price),
-    },
-  ],
-});
+  try {
+    let imageUrl = form.image;
 
-      alert("Product Added Successfully");
+    if (file) {
+      setUploading(true);
 
-      navigate("/admin/menu");
-    } catch (err) {
-      console.error(err);
-      alert("Failed to add product");
+      const result = await uploadImage(file);
+
+      imageUrl = result.url;
+
+      setUploading(false);
     }
-  };
+
+    await createProduct({
+      ...form,
+      image: imageUrl,
+      price: Number(form.price),
+      order: Number(form.order),
+      variants: [
+        {
+          label: "Regular",
+          price: Number(form.price),
+        },
+      ],
+    });
+
+    alert("Product Added Successfully");
+
+    navigate("/admin/menu");
+  } catch (err) {
+    console.error(err);
+    alert("Failed to add product");
+    setUploading(false);
+  }
+};
 
   return (
     <div className="max-w-3xl mx-auto bg-white rounded-xl shadow p-8">
@@ -138,14 +158,19 @@ const AddProduct = () => {
           onChange={handleChange}
           className="w-full border p-3 rounded"
         />
+<div>
+  <label className="font-semibold block mb-2">
+    Choose Product Image
+  </label>
 
-        <input
-          name="image"
-          placeholder="Image URL"
-          value={form.image}
-          onChange={handleChange}
-          className="w-full border p-3 rounded"
-        />
+  <input
+    type="file"
+    accept="image/*"
+    onChange={(e) => setFile(e.target.files[0])}
+    className="w-full border p-3 rounded"
+    required
+  />
+</div>
 
         <input
           type="number"
@@ -186,12 +211,12 @@ const AddProduct = () => {
         </label>
 
         <button
-          type="submit"
-          className="bg-[#2E1B18] text-white px-6 py-3 rounded-lg hover:bg-[#4B2E2A]"
-        >
-          Save Product
-        </button>
-
+  type="submit"
+  disabled={uploading}
+  className="bg-[#2E1B18] text-white px-6 py-3 rounded-lg hover:bg-[#4B2E2A]"
+>
+  {uploading ? "Uploading..." : "Save Product"}
+</button>
       </form>
 
     </div>

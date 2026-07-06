@@ -9,6 +9,9 @@ from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional
 import uuid
 from datetime import datetime, timezone
+import cloudinary
+import cloudinary.uploader
+from fastapi import UploadFile, File
 
 from app.models.status import StatusCheck, StatusCheckCreate
 
@@ -32,6 +35,7 @@ load_dotenv(ROOT_DIR / '.env')
 
 # MongoDB connection
 # MongoDB connection
+
 mongo_url = os.environ["MONGO_URL"]
 
 print("Mongo URL:", mongo_url)
@@ -39,6 +43,11 @@ print("DB Name:", os.environ["DB_NAME"])
 
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ["DB_NAME"]]
+cloudinary.config(
+    cloud_name="hvzjwuxa",
+    api_key="246376398952757",
+    api_secret="rUN3JhvJtHHe90MC1aoi-Y6C1mI"
+)
 
 app = FastAPI(title="Kolli Hills Fresh Cafe API")
 api_router = APIRouter(prefix="/api")
@@ -187,6 +196,69 @@ async def list_orders(limit: int = 500):
     )
 
     return [_deserialize_dates(r) for r in rows]
+class Gallery(BaseModel):
+    title: str
+    image: str
+    order: int = 1
+    is_active: bool = True
+class Message(BaseModel):
+    name: str
+    phone: str
+    email: str
+    subject: str
+    message: str
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc)
+    )
+class Settings(BaseModel):
+    cafe_name: str
+    phone: str
+    email: str
+    address: str
+    opening_hours: str
+@api_router.get("/messages", response_model=list[Message])
+async def get_messages():
+    messages = await db.messages.find({}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    return messages
+
+
+@api_router.post("/messages", response_model=Message)
+async def create_message(message: Message):
+    await db.messages.insert_one(message.dict())
+    return message
+
+
+@api_router.delete("/messages/{email}")
+async def delete_message(email: str):
+    await db.messages.delete_one({"email": email})
+    return {"message": "Message deleted successfully"}
+
+@api_router.get("/gallery", response_model=list[Gallery])
+async def get_gallery():
+    images = await db.gallery.find({}, {"_id": 0}).sort("order", 1).to_list(100)
+    return images
+
+
+@api_router.post("/gallery", response_model=Gallery)
+async def create_gallery(image: Gallery):
+    await db.gallery.insert_one(image.dict())
+    return image
+
+
+@api_router.delete("/gallery/{title}")
+async def delete_gallery(title: str):
+    await db.gallery.delete_one({"title": title})
+    return {"message": "Image deleted successfully"}
+
+@api_router.post("/upload")
+async def upload_image(file: UploadFile = File(...)):
+    try:
+        result = cloudinary.uploader.upload(file.file)
+        return {
+            "url": result["secure_url"]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @api_router.post("/orders", response_model=Order, status_code=201)
@@ -244,6 +316,34 @@ async def update_order_status(order_id: str, payload: OrderStatusUpdate):
 
 
 # ---------- Seed data ----------
+@api_router.get("/settings", response_model=Settings)
+async def get_settings():
+    settings = await db.settings.find_one({}, {"_id": 0})
+
+    if not settings:
+        default = Settings(
+            cafe_name="Kolli Hills Fresh Cafe",
+            phone="",
+            email="",
+            address="",
+            opening_hours=""
+        )
+
+        await db.settings.insert_one(default.model_dump())
+        return default
+
+    return settings
+
+
+@api_router.put("/settings", response_model=Settings)
+async def update_settings(settings: Settings):
+    await db.settings.update_one(
+        {},
+        {"$set": settings.model_dump()},
+        upsert=True
+    )
+
+    return settings
 SEED_CATEGORIES = [
     {"name": "Tea", "slug": "tea", "tag": "Hand-picked leaves", "order": 1,
      "image": "https://images.unsplash.com/photo-1570784332176-fdd73da66f03?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMjh8MHwxfHNlYXJjaHwxfHxwcmVtaXVtJTIwY3VwfGVufDB8fHx8MTc4MzEzODU3OHww&ixlib=rb-4.1.0&q=85"},

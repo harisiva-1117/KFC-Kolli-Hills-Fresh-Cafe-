@@ -23,6 +23,8 @@ import EditProduct from "@/admin/pages/EditProduct";
 import AddCategory from "@/admin/pages/AddCategory";
 import EditCategory from "@/admin/pages/EditCategory";
 
+import AddGallery from "@/admin/pages/AddGallery";
+import EditGallery from "@/admin/pages/EditGallery";
 function App() {
   return (
     <div className="App">
@@ -47,7 +49,9 @@ function App() {
               <Route path="menu" element={<MenuList />} />
               <Route path="menu/edit/:slug" element={<EditProduct />} />
               <Route path="categories" element={<Categories />} />
-              <Route path="gallery" element={<Gallery />} />
+              <Route path="gallery" element={<Gallery />} /> 
+              <Route path="gallery/add" element={<AddGallery />} />
+              <Route path="gallery/edit/:id" element={<EditGallery />} />
               <Route path="orders" element={<Orders />} />
               <Route path="messages" element={<Messages />} />
               <Route path="settings" element={<Settings />} />
